@@ -1,0 +1,1 @@
+echo The project has been built succesful. Please refer to the test file for further information.
