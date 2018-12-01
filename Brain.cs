@@ -24,7 +24,6 @@ public class Brain {
     public Connection[] repitionConnection;
     public int maxHN;
     public int maxHC;
-
     public delegate float ActivateNeuronFormula(double x);
 
     public Brain(Brain brain) {
@@ -129,7 +128,7 @@ public class Brain {
             float[] wArray;
             float[] biasArray;
             float[] repitionWArray;
-            for (i = 0; i < hidden.Length; i++) {
+            for (int i = 0; i < hidden.Length; i++) {
                 wArray = hiddenConnection[i].wArray;
                 biasArray = hidden[i].biasArray;
                 activeNeuronFormula = hidden[i].activeNeuronFormula;
@@ -142,7 +141,7 @@ public class Brain {
                     io_ = _hidden;
                     io__ = lastNeuronAmount;
                 }
-                if (hidden[i].repition) {
+                if (hidden[i].repition == true) {
                     repitionWArray = repitionConnection[i].wArray;
                     wIndex = 0;
                     repitionWIndex = 0;
@@ -203,6 +202,99 @@ public class Brain {
                     ibia += _input[k] * wArray[wIndex++];
                 }
                 _output[length] = activeNeuronFormula(ibia);
+            }
+        }
+    }
+
+    public void RunAndSaveData(BrainData data, CompleteData cData) {
+        float[] _input = data.input;
+        float[] _hidden = data.hidden;
+        float[] _output = data.output;
+        float[][] _repition = data.repition;
+        int wIndex;
+        int repitionWIndex;
+        ActivateNeuronFormula activeNeuronFormula;
+        if (hidden.Length > 0) {
+            int lastNeuronAmount = 0;
+            float[] wArray;
+            float[] biasArray;
+            float[] repitionWArray;
+            for (int i = 0; i < hidden.Length; i++) {
+                wArray = hiddenConnection[i].wArray;
+                biasArray = hidden[i].biasArray;
+                activeNeuronFormula = hidden[I].activeNeuronFormula;
+                float[] io_;
+                int io__;
+                if (i == 0) {
+                    io_ = input;
+                    io__ = input.Length;
+                } else {
+                    io_ = _hidden;
+                    io__ = lastNeuronAmount;
+                }
+                if (hidden[i].repition == true) {
+                    float[] irep = _repition[i];
+                    repitionWArray = repitionConnection[i].wArray;
+                    Array.Copy(irep, cData.repitionBuffer[i], irep.Length);
+                    wIndex = 0;
+                    repitionWIndex = 0;
+                    int k = biasArray.Length;
+                    while (k-- > 0) {
+                        float kbia = biasArray[k];
+                        int j = io__;
+                        while (j-- > 0) {
+                            kbia += io_[j] * wArray[wIndex++];
+                        }
+                        j = irep.Length;
+                        while (j-- > 0) {
+                            kbia += irep[j] * repitionWArray[repitionWIndex++];
+                        }
+                        _hidden[k] = activeNeuronFormula(kbia);
+                    }
+                    Array.Copy(_hidden, irep, biasArray.Length);
+                } else {
+                    wIndex = 0;
+                    int k = biasArray.Length;
+                    while (k-- > 0) {
+                        float kbia = biasArray[k];
+                        int j = io__;
+                        while (j-- > 0) {
+                            kbia += io_[j] * wArray[wIndex++];
+                        }
+                        _hidden[k] = activeNeuronFormula(kbia);
+                    }
+                }
+                Array.Copy(_hidden, cData.buffer[i], biasArray.Length);
+                lastNeuronAmount = biasArray.Length;
+            }
+            activeNeuronFormula = output.ActivateNeuronFormula;
+            wArray = outputConnection.wArray;
+            biasArray = output.biasArray;
+            wIndex = 0;
+            repitionWIndex = 0;
+            int i = _output.Length;
+            while (i-- > 0) {
+                float ibia = biasArray[i];
+                int k = lastNeuronAmount;
+                while (k-- > 0) {
+                    ibia += _hidden[k] * wArray[wIndex++];
+                }
+                _output[i] = activeNeuronFormula(ibia);
+            }
+        } else {
+            activeNeuronFormula = output.ActivateNeuronFormula;
+            float[] wArray = outputConnection.wArray;
+            float[] biasArray = output.biasArray;
+            wIndex = 0;
+            repitionWIndex = 0;
+            int i = _output.Length;
+            while (i-- > 0) {
+                float ibia = biasArray[i];
+                int k = _input.Length;
+                while (k-- > 0) {
+                    ibia += _input[k] * wArray[wIndex++];
+                }
+                _output[i] = activeNeuronFormula(ibia);
             }
         }
     }
